@@ -1,0 +1,22 @@
+### Health check
+GET http://localhost:8081/api/auth/health
+
+### Rejestracja nowego użytkownika
+POST http://localhost:8081/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "jan.kowalski@example.com",
+  "password": "haslo123",
+  "firstName": "Jan",
+  "lastName": "Kowalski"
+}
+
+### Logowanie
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "jan.kowalski@example.com",
+  "password": "haslo123"
+}
