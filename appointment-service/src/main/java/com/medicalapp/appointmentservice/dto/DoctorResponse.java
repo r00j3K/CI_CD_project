@@ -1,4 +1,4 @@
-package com.medicalapp.userservice.dto;
+package com.medicalapp.appointmentservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterRequest {
+public class DoctorResponse {
 
-    private String email;
-    private String password;
+    private Long id;
     private String firstName;
     private String lastName;
-    private String role;
+    private String specialization;
+    private String roomNumber;
+    private String phoneNumber;
 }

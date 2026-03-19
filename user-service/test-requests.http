@@ -20,3 +20,15 @@ Content-Type: application/json
   "email": "jan.kowalski@example.com",
   "password": "haslo123"
 }
+
+### Rejestracja admina
+POST http://localhost:8081/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@medical.com",
+  "password": "admin123",
+  "firstName": "Admin",
+  "lastName": "System",
+  "role": "ADMIN"
+}

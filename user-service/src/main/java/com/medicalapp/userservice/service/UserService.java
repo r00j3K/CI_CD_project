@@ -26,12 +26,21 @@ public class UserService {
             throw new RuntimeException("Email already in use: " + request.getEmail());
         }
 
+        User.Role userRole = User.Role.PATIENT;
+        if (request.getRole() != null) {
+            try {
+                userRole = User.Role.valueOf(request.getRole().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                userRole = User.Role.PATIENT;
+            }
+        }
+
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
-                .role(User.Role.PATIENT)
+                .role(userRole)
                 .build();
 
         userRepository.save(user);

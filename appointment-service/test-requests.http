@@ -1,0 +1,58 @@
+### Zmienne
+@adminToken = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJzdWIiOiJhZG1pbkBtZWRpY2FsLmNvbSIsImlhdCI6MTc3Mzg4NTQ5MiwiZXhwIjoxNzczOTcxODkyfQ.onLpQ3CFmipgj_Reb_JWAloWQfp6ZbjffkY2MPc47Hs
+@patientToken = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEFUSUVOVCIsInN1YiI6Imphbi5rb3dhbHNraUBleGFtcGxlLmNvbSIsImlhdCI6MTc3Mzg4NTA2OCwiZXhwIjoxNzczOTcxNDY4fQ.DbyVsh8g-GA1ghvxWchBtXErlijP6uxgaybcvKJqbWg
+
+### Health check (publiczny)
+GET http://localhost:8082/api/slots/health
+
+### Rejestracja admina (w user-service!)
+POST http://localhost:8081/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@medical.com",
+  "password": "admin123",
+  "firstName": "Admin",
+  "lastName": "System",
+  "role": "ADMIN"
+}
+
+### Logowanie admina (skopiuj token stąd!)
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@medical.com",
+  "password": "admin123"
+}
+
+### Dodaj lekarza (wymaga tokenu ADMIN)
+POST http://localhost:8082/api/doctors
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "firstName": "Anna",
+  "lastName": "Nowak",
+  "specialization": "Kardiologia",
+  "roomNumber": "101",
+  "phoneNumber": "123456789"
+}
+
+### Lista lekarzy
+GET http://localhost:8082/api/doctors
+Authorization: Bearer {{adminToken}}
+
+### Dodaj slot
+POST http://localhost:8082/api/slots
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "doctorId": 1,
+  "startTime": "2026-04-01T10:00:00"
+}
+
+### Lista dostępnych slotów
+GET http://localhost:8082/api/slots/available
+Authorization: Bearer {{patientToken}}
