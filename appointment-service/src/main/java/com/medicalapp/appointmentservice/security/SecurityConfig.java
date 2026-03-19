@@ -30,6 +30,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/slots/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/doctors/**")
                         .hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/slots/*/available").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/slots/*/unavailable").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/slots/**")
                         .hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.PATCH, "/api/slots/**")

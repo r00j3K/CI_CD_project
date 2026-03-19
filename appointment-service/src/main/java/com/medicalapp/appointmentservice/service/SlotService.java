@@ -93,4 +93,10 @@ public class SlotService {
                 .available(slot.isAvailable())
                 .build();
     }
+    public SlotResponse getSlotById(Long slotId) {
+        AppointmentSlot slot = slotRepository.findById(slotId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Slot not found with id: " + slotId));
+        return mapToResponse(slot);
+    }
 }

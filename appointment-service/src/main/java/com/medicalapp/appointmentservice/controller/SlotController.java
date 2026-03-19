@@ -32,13 +32,13 @@ public class SlotController {
         return ResponseEntity.ok(slotService.getSlotsByDoctor(doctorId));
     }
 
-    @PatchMapping("/{slotId}/unavailable")
+    @PostMapping("/{slotId}/unavailable")
     public ResponseEntity<Void> markAsUnavailable(@PathVariable Long slotId) {
         slotService.markSlotAsUnavailable(slotId);
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/{slotId}/available")
+    @PostMapping("/{slotId}/available")
     public ResponseEntity<Void> markAsAvailable(@PathVariable Long slotId) {
         slotService.markSlotAsAvailable(slotId);
         return ResponseEntity.ok().build();
@@ -47,5 +47,10 @@ public class SlotController {
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Appointment Service is running!");
+    }
+
+    @GetMapping("/{slotId}")
+    public ResponseEntity<SlotResponse> getSlotById(@PathVariable Long slotId) {
+        return ResponseEntity.ok(slotService.getSlotById(slotId));
     }
 }

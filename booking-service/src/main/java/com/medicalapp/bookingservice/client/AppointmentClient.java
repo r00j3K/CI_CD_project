@@ -38,7 +38,7 @@ public class AppointmentClient {
 
         restTemplate.exchange(
                 appointmentServiceUrl + "/api/slots/" + slotId + "/unavailable",
-                HttpMethod.PATCH,
+                HttpMethod.POST,
                 entity,
                 Void.class
         );
@@ -51,7 +51,7 @@ public class AppointmentClient {
 
         restTemplate.exchange(
                 appointmentServiceUrl + "/api/slots/" + slotId + "/available",
-                HttpMethod.PATCH,
+                HttpMethod.POST,
                 entity,
                 Void.class
         );
