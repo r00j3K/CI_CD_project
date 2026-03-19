@@ -3,17 +3,43 @@
 ## Opis projektu
 System umożliwiający pacjentom przeglądanie dostępnych terminów wizyt
 oraz dokonywanie rezerwacji w wybranej placówce medycznej.
-Oparty na architekturze mikrousługowej, napisany w Java + Spring Boot,
-uruchamiany w środowisku Docker.
+Oparty na architekturze mikrousługowej, napisany w Java + Spring Boot
+z frontendem w React, uruchamiany w środowisku Docker.
 
+---
 
-### Stack technologiczny
-- **Framework:** Spring Boot
-- **Komunikacja między usługami:** REST (HTTP/JSON)
-- **Baza danych:** MySQL (każda usługa ma swoją własną bazę)
-- **Autoryzacja:** JWT (każda mikrousługa weryfikuje token samodzielnie)
-- **API Gateway:** Spring Cloud Gateway (port 8080)
-- **Powiadomienia e-mail:** Mock (logowanie na konsolę)
+## Wymagania techniczne
+
+### Backend
+- **Java** 17
+- **Maven** 3.8+
+- **Spring Boot** 3.2.0
+- **Spring Cloud** 2023.0.0 (API Gateway)
+- **MySQL** 8.0 (XAMPP v3.3.0)
+- **JWT** (jjwt 0.11.5)
+- **Lombok**
+
+### Frontend
+- **Node.js** 18.16.1
+- **React** + **Vite** 4.4.0
+- **React Router DOM**
+- **Axios**
+
+### Narzędzia
+- **IntelliJ IDEA** 2024.1
+- **XAMPP** 3.3.0 (MySQL + phpMyAdmin)
+- **Git** + **GitHub** (repozytorium prywatne)
+- **IntelliJ HTTP Client** (testowanie API)
+
+### Porty
+| Serwis | Port |
+|--------|------|
+| API Gateway | 8080 |
+| User Service | 8081 |
+| Appointment Service | 8082 |
+| Booking Service | 8083 |
+| MySQL | 3306 |
+| Frontend (React) | 5173 |
 
 ### Domeny biznesowe
 
@@ -30,160 +56,49 @@ uruchamiany w środowisku Docker.
 - Role w systemie: **PATIENT, DOCTOR, ADMIN**
 - Nowy użytkownik rejestruje się domyślnie jako **PATIENT**
 
----
+#### Rezerwacje
+- Pacjent może mieć maksymalnie **3 aktywne rezerwacje** jednocześnie
+- Po anulowaniu rezerwacji slot **wraca jako dostępny**
 
-## Architektura systemu
-```
-Klient (przeglądarka)
-        ↓ HTTP/JSON
-API Gateway (port 8080)
-        ↓
-┌───────────────────────────────────────┐
-│                                       │
-User Service        Appointment Service        Booking Service
-(port 8081)         (port 8082)                (port 8083)
-│                   │                          │
-MySQL:3307          MySQL:3308                 MySQL:3309
-(userdb)            (appointmentdb)            (bookingdb)
-│
-Notification (mock - log na konsolę)
-```
-
----
-
-## Mikrousługi
-
-### 1. User Service (port 8081)
-**Odpowiedzialność:** Zarządzanie kontami pacjentów oraz autoryzacja.
-
-**Endpointy:**
-| Metoda | URL | Opis | Dostęp |
-|--------|-----|------|--------|
-| POST | /api/auth/register | Rejestracja nowego użytkownika | Publiczny |
-| POST | /api/auth/login | Logowanie, zwraca token JWT | Publiczny |
-| GET | /api/auth/health | Health check usługi | Publiczny |
-
-**Modele:**
-- `User` — encja użytkownika (id, email, password, firstName, lastName, role)
-
-**Status:** 
-
----
-
-### 2. Appointment Service (port 8082)
-**Odpowiedzialność:** Zarządzanie lekarzami i dostępnymi slotami wizyt.
-
-**Endpointy:**
-| Metoda | URL | Opis | Dostęp |
-|--------|-----|------|--------|
-| POST | /api/doctors | Dodanie nowego lekarza | ADMIN, DOCTOR |
-| GET | /api/doctors | Lista wszystkich lekarzy | Zalogowany |
-| GET | /api/doctors/{id} | Szczegóły lekarza | Zalogowany |
-| POST | /api/slots | Dodanie nowego slotu | ADMIN, DOCTOR |
-| GET | /api/slots/available | Lista dostępnych slotów (30 dni) | Zalogowany |
-| GET | /api/slots/doctor/{doctorId} | Sloty konkretnego lekarza | Zalogowany |
-
-**Modele:**
-- `Doctor` — encja lekarza (id, firstName, lastName, specialization, roomNumber, phoneNumber)
-- `AppointmentSlot` — encja slotu (id, doctorId, startTime, endTime, isAvailable)
-
-**Status:** 
-
----
-
-### 3. Booking Service (port 8083)
-**Odpowiedzialność:** Obsługa rezerwacji wizyt i powiadomień.
-
-**Endpointy:**
-| Metoda | URL | Opis | Dostęp |
-|--------|-----|------|--------|
-| POST | /api/bookings | Dokonanie rezerwacji | PATIENT |
-| GET | /api/bookings/my | Historia rezerwacji pacjenta | PATIENT |
-| DELETE | /api/bookings/{id} | Anulowanie rezerwacji | PATIENT |
-
-**Modele:**
-- `Booking` — encja rezerwacji (id, patientEmail, slotId, doctorId, status, createdAt)
-
-**Status:** 
----
-
-### 4. API Gateway (port 8080)
-**Odpowiedzialność:** Punkt wejścia dla wszystkich żądań, routing do mikrousług.
-
-**Routing:**
-- `/api/auth/**` → User Service (8081)
-- `/api/doctors/**` → Appointment Service (8082)
-- `/api/slots/**` → Appointment Service (8082)
-- `/api/bookings/**` → Booking Service (8083)
-
-**Status:**
-
----
-
-## Struktura projektu
-```
-CI_CD_project/
-├── README.md
-├── pom.xml                          # Parent POM
-├── user-service/                    # Mikrousługa użytkowników
-│   ├── pom.xml
-│   └── src/main/java/com/medicalapp/userservice/
-│       ├── controller/              # AuthController
-│       ├── dto/                     # RegisterRequest, LoginRequest, AuthResponse
-│       ├── model/                   # User
-│       ├── repository/              # UserRepository
-│       ├── security/                # JwtUtil, SecurityConfig
-│       ├── service/                 # UserService, UserDetailsServiceImpl
-│       └── UserServiceApplication.java
-├── appointment-service/             # Mikrousługa wizyt
-│   ├── pom.xml
-│   └── src/main/java/com/medicalapp/appointmentservice/
-│       ├── controller/              # DoctorController, SlotController
-│       ├── dto/                     # DoctorRequest, SlotRequest, SlotResponse
-│       ├── model/                   # Doctor, AppointmentSlot
-│       ├── repository/              # DoctorRepository, SlotRepository
-│       ├── security/                # JwtUtil, SecurityConfig
-│       └── service/                 # DoctorService, SlotService
-├── booking-service/                 # Mikrousługa rezerwacji
-│   └── src/main/java/com/medicalapp/bookingservice/
-└── api-gateway/                     # Brama API
-```
-
----
+#### Walidacja formularzy (frontend)
+- Hasło minimum **10 znaków**
+- Hasło musi zawierać: **wielką literę, małą literę, cyfrę, znak specjalny**
+- Imię i nazwisko: **tylko litery**
+- Email: **poprawny format**
+- Potwierdzenie hasła: **musi być identyczne**
 
 ## Uruchomienie projektu
 
-### Wymagania
-- Java 17+
-- Maven 3.8+
-- MySQL (XAMPP lub Docker)
-- IntelliJ IDEA 2024
+### Wymagania wstępne
+1. Zainstalowana **Java 17**
+2. Zainstalowany **Maven**
+3. Zainstalowany **Node.js 18+**
+4. Uruchomiony **MySQL** (np. przez XAMPP)
 
-### Uruchomienie lokalne (bez Dockera)
-Uruchom każdą usługę osobno w IntelliJ:
+### Krok 1 — Uruchom bazę danych
+Otwórz XAMPP i uruchom **MySQL**
+
+### Krok 2 — Uruchom mikrousługi (w IntelliJ)
+Uruchom kolejno w IntelliJ:
 1. `UserServiceApplication` — port 8081
 2. `AppointmentServiceApplication` — port 8082
 3. `BookingServiceApplication` — port 8083
 4. `ApiGatewayApplication` — port 8080
 
-### Uruchomienie z Dockerem (planowane)
+### Krok 3 — Uruchom frontend
 ```bash
-docker-compose up --build
+cd frontend
+npm install
+npm run dev
 ```
+
+### Krok 4 — Otwórz aplikację
+Wejdź na `http://localhost:5173`
+
+### Domyślne konta testowe
+| Email | Hasło | Rola |
+|-------|-------|------|
+| jan.kowalski@example.com | haslo123 | PATIENT |
+| admin@medical.com | admin123 | ADMIN |
 
 ---
-
-## Testowanie
-
-### User Service
-```http
-POST http://localhost:8081/api/auth/register
-Content-Type: application/json
-
-{
-  "email": "jan.kowalski@example.com",
-  "password": "haslo123",
-  "firstName": "Jan",
-  "lastName": "Kowalski"
-}
-```
