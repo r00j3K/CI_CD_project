@@ -62,5 +62,13 @@ CREATE TABLE IF NOT EXISTS bookings (
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+CREATE USER IF NOT EXISTS 'medapp_user'@'%' IDENTIFIED BY 'medapp_password';
+
+GRANT ALL PRIVILEGES ON userdb.* TO 'medapp_user'@'%';
+GRANT ALL PRIVILEGES ON appointmentdb.* TO 'medapp_user'@'%';
+GRANT ALL PRIVILEGES ON bookingdb.* TO 'medapp_user'@'%';
+
+FLUSH PRIVILEGES;
+
 SELECT 'Bazy danych MedApp zainicjalizowane!' AS status;
 
