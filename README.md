@@ -11,7 +11,7 @@ z frontendem w React, uruchamiany w środowisku Docker.
 ## Wymagania techniczne
 
 ### Backend
-- **Java** 17
+- **Java** 21
 - **Maven** 3.8+
 - **Spring Boot** 3.2.0
 - **Spring Cloud** 2023.0.0 (API Gateway)
