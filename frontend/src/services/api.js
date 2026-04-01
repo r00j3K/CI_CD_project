@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -18,7 +18,6 @@ api.interceptors.request.use((config) => {
 }, (error) => {
     return Promise.reject(error);
 });
-
 
 export const authService = {
     register: (data) => api.post('/api/auth/register', data),
@@ -41,13 +40,10 @@ export const slotService = {
 };
 
 export const bookingService = {
-    create: (data) => {
-        const token = localStorage.getItem('token');
-        return api.post('/api/bookings', data, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-    },
+    // UPROSZCZONE: Interceptor sam doda token, nie musisz go tu wyciągać!
+    create: (data) => api.post('/api/bookings', data),
     getMyBookings: () => api.get('/api/bookings/my'),
     cancel: (id) => api.delete(`/api/bookings/${id}`),
 };
+
 export default api;
