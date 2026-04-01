@@ -1,35 +1,57 @@
-FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
+# BUILD stage
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
+# Set BUILD stage workdir to app folder
 WORKDIR /app
 
+# Copy root pom.xml file to workidr folder
 COPY pom.xml .
-COPY ../pom.xml ../pom.xml
 
-RUN mvn dependency:go-offline -B
+# Copy microservice pom.xml file to corresponding image folder
+COPY api-gateway/pom.xml api-gateway/
 
-COPY src ./src
-RUN mvn clean package -DskipTests -B
+# Download dependencies as listed in api-gateway/pom.xml file before compilation of the module
+RUN mvn -f api-gateway/pom.xml dependency:go-offline -B
 
-FROM eclipse-temurin:17-jre-alpine AS runner
+# Copy the source code
+COPY api-gateway/src api-gateway/src
 
-LABEL maintainer="themarcos"
-LABEL description="MedApp - API Gateway"
-LABEL version="1.0.0"
+# Build API-gateway module using mvn
+RUN mvn -f api-gateway/pom.xml clean package -DskipTests -B
 
+# RUN stage
+FROM eclipse-temurin:21-jre-alpine AS runner
+
+LABEL maintainer="themarcos" \
+      description="MedApp - API Gateway" \
+      version="1.0.0"
+
+# First one tells Java that it runs inside container
+# Second one tells Java that it can use up to 75% of assigned container memory
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
+
+# Set RUN stage stage workdir to app folder
 WORKDIR /app
 
+# Create both group and user without root privileges
 RUN addgroup -S medapp && adduser -S medapp -G medapp
 
-COPY --from=builder /app/target/*.jar app.jar
+# Copy JAR file from the BUILD stage
+COPY --from=builder /app/api-gateway/target/*.jar app.jar
 
+# Change medapp file ownership to medapp
 RUN chown medapp:medapp app.jar
 
+# Switch to user medapp
 USER medapp
 
+# EXPOSE port 8080 outside the container
 EXPOSE 8080
 
+# Use Spring Boot Acutator to check app status
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider \
     http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run app with JAVA_OPTS parameter
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
