@@ -17,7 +17,7 @@ RUN mvn -f api-gateway/pom.xml dependency:go-offline -B
 COPY api-gateway/src api-gateway/src
 
 # Build API-gateway module using mvn
-RUN mvn -f api-gateway/pom.xml clean package -DskipTests -B
+RUN mvn -f api-gateway/pom.xml package -DskipTests -B
 
 # RUN stage
 FROM eclipse-temurin:21-jre-alpine AS runner
