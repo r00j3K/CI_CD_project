@@ -1,5 +1,5 @@
 # BUILD stage
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
 # Set BUILD stage workdir to app folder
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY user-service/src ./src
 RUN mvn clean package -DskipTests -B
 
 # RUN stage
-FROM eclipse-temurin:17-jdk-jammy AS runner
+FROM eclipse-temurin:21-jdk-jammy AS runner
 
 LABEL maintainer="themarcos"
 LABEL description="MedApp - User Service"
