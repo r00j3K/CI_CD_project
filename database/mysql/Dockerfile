@@ -1,8 +1,15 @@
-FROM mysql:8.0
+FROM mysql:8.4
 
 LABEL maintainer="themarcos" \
       description="MedApp - MySQL Database" \
       version="1.0.0"
+
+# Change system user to root in order to update all packages
+USER root
+RUN microdnf update -y && microdnf clean all
+
+# Switch back to mysql user
+USER mysql
 
 # Copy init file to corresponding folder inside image
 COPY database/mysql/init.sql /docker-entrypoint-initdb.d/
