@@ -1,17 +1,17 @@
 # BUILD stage
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Set BUILD stage workdir to app folder
 WORKDIR /app
 
 # Copy package files to workdir
-COPY package*.json .
+COPY frontend/package*.json .
 
 # Install exact dependencies from lockfile
 RUN npm ci --silent
 
 # Copy the source code
-COPY . .
+COPY frontend/ .
 
 # Build the project for production
 RUN npm run build
