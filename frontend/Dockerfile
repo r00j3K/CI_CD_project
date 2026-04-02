@@ -23,6 +23,10 @@ LABEL maintainer="themarcos" \
       description="MedApp - Frontend React" \
       version="1.0.0"
 
+# Change system user to root in order to update all packages
+USER root
+RUN apk update && apk upgrade --no-cache
+
 # Copy build artifacts from the BUILD stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 

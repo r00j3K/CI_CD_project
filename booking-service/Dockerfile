@@ -30,6 +30,10 @@ LABEL maintainer="themarcos" \
 # Second one tells Java that it can use up to 75% of assigned container memory
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
 
+# Change user to root in order to update system packages
+USER root
+RUN apk update && apk upgrade --no-cache
+
 # Set RUN stage workdir to app folder
 WORKDIR /app
 
