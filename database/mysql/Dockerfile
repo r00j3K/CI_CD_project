@@ -1,4 +1,3 @@
-# Używamy oficjalnego obrazu MySQL 8.0 jako bazy
 FROM mysql:8.0
 
 LABEL maintainer="themarcos" \
@@ -6,7 +5,7 @@ LABEL maintainer="themarcos" \
       version="1.0.0"
 
 # Copy init file to corresponding folder inside image
-COPY init.sql /docker-entrypoint-initdb.d/
+COPY database/mysql/init.sql /docker-entrypoint-initdb.d/
 
 # Expose port 
 EXPOSE 3306
