@@ -22,6 +22,9 @@ RUN mvn -f api-gateway/pom.xml package -DskipTests -B
 # RUN stage
 FROM eclipse-temurin:21-jre-alpine AS runner
 
+# FORCED UPDATE OF SYSTEM LIBRARIES
+RUN apk update && apk upgrade --no-cache libexpat
+
 LABEL maintainer="themarcos" \
       description="MedApp - API Gateway" \
       version="1.0.0"
