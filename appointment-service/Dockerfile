@@ -22,6 +22,9 @@ RUN mvn -f appointment-service/pom.xml package -DskipTests -B
 # RUN stage
 FROM eclipse-temurin:21-jre-alpine AS runner
 
+# Update system packages
+RUN apk update && apk upgrade --no-cache
+
 LABEL maintainer="themarcos" \
       description="MedApp - Appointment Service" \
       version="1.0.0"
