@@ -4,44 +4,58 @@ FROM maven:3.9.6-eclipse-temurin-21 AS builder
 # Set BUILD stage workdir to app folder
 WORKDIR /app
 
-# Copy package files to workdir
-COPY user-service/pom.xml .
-COPY pom.xml ../pom.xml
+# Copy root pom.xml file to workdir folder
+COPY pom.xml .
 
-# Install exact dependencies from lockfile
-RUN mvn dependency:go-offline -B
+# Copy microservice pom.xml file to corresponding image folder
+COPY user-service/pom.xml user-service/
+
+# Download dependencies as listed in user-service/pom.xml file before compilation of the module
+RUN mvn -f user-service/pom.xml dependency:go-offline -B
 
 # Copy the source code
-COPY user-service/src ./src
-RUN mvn clean package -DskipTests -B
+COPY user-service/src user-service/src
+
+# Build User-service module using mvn
+RUN mvn -f user-service/pom.xml package -DskipTests -B
 
 # RUN stage
-FROM eclipse-temurin:21-jdk-jammy AS runner
+FROM eclipse-temurin:21-jre-alpine AS runner
 
-LABEL maintainer="themarcos"
-LABEL description="MedApp - User Service"
-LABEL version="1.0.0"
+# Update system packages
+RUN apk update && apk upgrade --no-cache
+
+LABEL maintainer="themarcos" \
+      description="MedApp - User Service" \
+      version="1.0.0"
+
+# First one tells Java that it runs inside container
+# Second one tells Java that it can use up to 75% of assigned container memory
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
 
 # Set RUN stage workdir to app folder
 WORKDIR /app
 
-RUN groupadd -r medapp && useradd -r -g medapp medapp
+# Create both group and user without root privileges
+RUN addgroup -S medapp && adduser -S medapp -G medapp
 
-# Copy build artifacts from the BUILD stage
-COPY --from=builder /app/target/*.jar app.jar
+# Copy JAR file from the BUILD stage
+# Scieżka musi uwzględniać podfolder modułu, w którym Maven zbudował target
+COPY --from=builder /app/user-service/target/*.jar app.jar
 
+# Change medapp file ownership to medapp
 RUN chown medapp:medapp app.jar
 
-# Switch to medapp user
+# Switch to user medapp
 USER medapp
 
 # EXPOSE port 8081 outside the container
 EXPOSE 8081
 
-# Use wget to check if the web server is running
+# Use Spring Boot Actuator to check app status
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider \
-    http://localhost:8081/api/auth/health || exit 1
+    http://localhost:8081/actuator/health || exit 1
 
-# Start the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run app with JAVA_OPTS parameter
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
