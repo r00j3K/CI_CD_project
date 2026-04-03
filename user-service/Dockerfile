@@ -23,7 +23,7 @@ RUN mvn -f user-service/pom.xml package -DskipTests -B
 FROM eclipse-temurin:21-jre-alpine AS runner
 
 # Update system packages
-RUN apk update && apk upgrade --no-cache
+RUN apk update && apk upgrade --no-cache && apk add curl
 
 LABEL maintainer="themarcos" \
       description="MedApp - User Service" \
@@ -54,8 +54,7 @@ EXPOSE 8081
 
 # Use Spring Boot Actuator to check app status
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider \
-    http://localhost:8081/actuator/health || exit 1
+    CMD curl -f http://localhost:8081/actuator/health || exit 1
 
 # Run app with JAVA_OPTS parameter
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

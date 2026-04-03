@@ -32,7 +32,7 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.securit
 
 # Change user to root in order to update system packages
 USER root
-RUN apk update && apk upgrade --no-cache
+RUN apk update && apk upgrade --no-cache && apk add curl
 
 # Set RUN stage workdir to app folder
 WORKDIR /app
@@ -53,9 +53,9 @@ USER medapp
 EXPOSE 8083
 
 # Use Spring Boot Actuator to check app status
+# Use Spring Boot Actuator to check app status using curl
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider \
-    http://localhost:8083/actuator/health || exit 1
+    CMD curl -f http://localhost:8083/actuator/health || exit 1
 
 # Run app with JAVA_OPTS parameter
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
