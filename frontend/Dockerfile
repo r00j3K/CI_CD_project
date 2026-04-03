@@ -38,8 +38,7 @@ EXPOSE 80
 
 # Use wget to check if the web server is running
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider \
-    http://localhost:80 || exit 1
+    CMD curl -f http://localhost:80/ || exit 1
 
 # Start nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
