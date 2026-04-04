@@ -51,9 +51,5 @@ USER medapp
 # EXPOSE port 8082 outside the container
 EXPOSE 8082
 
-# Use Spring Boot Actuator to check app status
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8082/actuator/health || exit 1
-
 # Run app with JAVA_OPTS parameter
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

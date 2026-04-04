@@ -23,7 +23,7 @@ RUN mvn -f api-gateway/pom.xml package -DskipTests -B
 FROM eclipse-temurin:21-jre-alpine AS runner
 
 # FORCED UPDATE OF SYSTEM LIBRARIES
-RUN apk update && apk upgrade --no-cache 
+RUN apk update && apk upgrade --no-cache && apk add curl
 
 LABEL maintainer="themarcos" \
       description="MedApp - API Gateway" \
@@ -50,11 +50,6 @@ USER medapp
 
 # EXPOSE port 8080 outside the container
 EXPOSE 8080
-
-# Use Spring Boot Acutator to check app status
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider \
-    http://localhost:8080/actuator/health || exit 1
 
 # Run app with JAVA_OPTS parameter
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
