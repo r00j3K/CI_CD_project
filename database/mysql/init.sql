@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS doctors (
 CREATE TABLE IF NOT EXISTS appointment_slots (
     id BIGINT NOT NULL AUTO_INCREMENT,
     doctor_id BIGINT NOT NULL,
-    sstart_time DATETIME(6) NOT NULL,
+    start_time DATETIME(6) NOT NULL,
     end_time DATETIME(6) NOT NULL,
     available BIT NOT NULL,
     PRIMARY KEY (id),
