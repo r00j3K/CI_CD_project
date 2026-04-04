@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  # --- DATABASE ---
+  mysql-db:
+    build:
+      context: .
+      dockerfile: database/mysql/Dockerfile
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+    networks:
+      - medapp-network
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- USER SERVICE ---
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: user-service
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - medapp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # --- APPOINTMENT SERVICE ---
+  appointment-service:
+    build:
+      context: .
+      dockerfile: appointment-service/Dockerfile
+    container_name: appointment-service
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - medapp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # --- BOOKING SERVICE ---
+  booking-service:
+    build:
+      context: .
+      dockerfile: booking-service/Dockerfile
+    container_name: booking-service
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      APPOINTMENT_SERVICE_HOST: ${APPOINTMENT_SERVICE_HOST}
+      APPOINTMENT_SERVICE_PORT: ${APPOINTMENT_SERVICE_PORT}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - medapp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # --- API GATEWAY ---
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080" 
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: false
+    depends_on:
+      user-service:
+        condition: service_healthy
+      appointment-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+    networks:
+      - medapp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # --- FRONTEND ---
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: medapp-frontend
+    ports:
+      - "80:80" 
+    environment:
+      - VITE_API_URL=http://localhost:8080 
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - medapp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+networks:
+  medapp-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
