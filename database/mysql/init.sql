@@ -24,12 +24,6 @@ CREATE TABLE IF NOT EXISTS users (
     UNIQUE KEY UK_users_email (email)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO users (email, password, first_name, last_name, role) VALUES 
-('admin@medapp.pl', 'Admin123!', 'Adrian', 'Administrator', 'ADMIN'),
-('lekarz@medapp.pl', 'Lekarz123!', 'Marek', 'Nowak', 'DOCTOR'),
-('pacjent@medapp.pl', 'Pacjent123!', 'Jan', 'Kowalski', 'PATIENT');
-
-
 USE appointmentdb;
 
 CREATE TABLE IF NOT EXISTS doctors (
