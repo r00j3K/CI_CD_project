@@ -4,7 +4,22 @@
 System umożliwiający pacjentom przeglądanie dostępnych terminów wizyt
 oraz dokonywanie rezerwacji w wybranej placówce medycznej.
 Oparty na architekturze mikrousługowej, napisany w Java + Spring Boot
-z frontendem w React, uruchamiany w środowisku Docker.
+z frontendem w React (Nginx), uruchamiany w środowisku Docker Compose.
+
+---
+
+## Architektura systemu
+
+Aplikacja działa w oparciu o architekturę mikrousługową w sieci Docker `medapp-network`.
+
+| Serwis | Technologia | Opis |
+|--------|-------------|------|
+| **Frontend** | React + Vite, Nginx | Aplikacja webowa serwowana przez Nginx. Komunikuje się wyłącznie przez API Gateway. |
+| **API Gateway** | Spring Cloud Gateway | Jedyny punkt wejścia dla klientów. Routing, load balancing, health checks, JWT processing. |
+| **User Service** | Spring Boot | Rejestracja, logowanie, zarządzanie użytkownikami, autoryzacja JWT. |
+| **Appointment Service** | Spring Boot | Zarządzanie lekarzami, specjalizacjami i dostępnymi slotami wizyt. |
+| **Booking Service** | Spring Boot | Rezerwacje wizyt, integracja z Appointment Service, wysyłka e-mail przez SMTP. |
+| **MySQL Database** | MySQL 8.0 | Wspólna baza danych dla wszystkich serwisów z trwałym wolumenem `mysql_data`. |
 
 ---
 
@@ -15,7 +30,7 @@ z frontendem w React, uruchamiany w środowisku Docker.
 - **Maven** 3.8+
 - **Spring Boot** 3.2.0
 - **Spring Cloud** 2023.0.0 (API Gateway)
-- **MySQL** 8.0 (XAMPP v3.3.0)
+- **MySQL** 8.0
 - **JWT** (jjwt 0.11.5)
 - **Lombok**
 
@@ -25,80 +40,74 @@ z frontendem w React, uruchamiany w środowisku Docker.
 - **React Router DOM**
 - **Axios**
 
-### Narzędzia
-- **IntelliJ IDEA** 2024.1
-- **XAMPP** 3.3.0 (MySQL + phpMyAdmin)
-- **Git** + **GitHub** (repozytorium prywatne)
-- **IntelliJ HTTP Client** (testowanie API)
+---
 
-### Porty
+## Porty
+
 | Serwis | Port |
 |--------|------|
+| Frontend (Nginx) | 80 |
 | API Gateway | 8080 |
 | User Service | 8081 |
 | Appointment Service | 8082 |
 | Booking Service | 8083 |
 | MySQL | 3306 |
-| Frontend (React) | 5173 |
 
-### Domeny biznesowe
+## Domeny biznesowe
 
-#### Lekarze
+### Lekarze
 - Przechowywane dane: imię, nazwisko, specjalizacja, numer gabinetu, numer telefonu
 - Jeden lekarz ma dokładnie **jedną specjalizację**
 - Lekarzy i sloty mogą dodawać: **ADMIN i DOCTOR**
 
-#### Sloty czasowe
+### Sloty czasowe
 - Czas trwania jednego slotu: **30 minut**
 - Pacjent może przeglądać sloty do **30 dni** do przodu
 
-#### Użytkownicy
+### Użytkownicy
 - Role w systemie: **PATIENT, DOCTOR, ADMIN**
 - Nowy użytkownik rejestruje się domyślnie jako **PATIENT**
 
-#### Rezerwacje
+### Rezerwacje
 - Pacjent może mieć maksymalnie **3 aktywne rezerwacje** jednocześnie
 - Po anulowaniu rezerwacji slot **wraca jako dostępny**
 
-#### Walidacja formularzy (frontend)
+### Walidacja formularzy (frontend)
 - Hasło minimum **10 znaków**
 - Hasło musi zawierać: **wielką literę, małą literę, cyfrę, znak specjalny**
 - Imię i nazwisko: **tylko litery**
 - Email: **poprawny format**
 - Potwierdzenie hasła: **musi być identyczne**
 
+---
+
 ## Uruchomienie projektu
 
-### Wymagania wstępne
-1. Zainstalowana **Java 17**
-2. Zainstalowany **Maven**
-3. Zainstalowany **Node.js 18+**
-4. Uruchomiony **MySQL** (np. przez XAMPP)
+#### Wymagania wstępne
+- Zainstalowany **Docker Desktop**
 
-### Krok 1 — Uruchom bazę danych
-Otwórz XAMPP i uruchom **MySQL**
-
-### Krok 2 — Uruchom mikrousługi (w IntelliJ)
-Uruchom kolejno w IntelliJ:
-1. `UserServiceApplication` — port 8081
-2. `AppointmentServiceApplication` — port 8082
-3. `BookingServiceApplication` — port 8083
-4. `ApiGatewayApplication` — port 8080
-
-### Krok 3 — Uruchom frontend
+#### Uruchomienie
 ```bash
-cd frontend
-npm install
-npm run dev
+docker compose up --build
 ```
 
-### Krok 4 — Otwórz aplikację
-Wejdź na `http://localhost:5173`
+Compose zbuduje i uruchomi wszystkie serwisy (`frontend`, `api-gateway`, `user-service`,
+`appointment-service`, `booking-service`, `mysql-db`) w sieci `medapp-network`.
 
-### Domyślne konta testowe
-| Email | Hasło | Rola |
-|-------|-------|------|
-| jan.kowalski@example.com | haslo123 | PATIENT |
-| admin@medical.com | admin123 | ADMIN |
+#### Otwórz aplikację
+Wejdź na `http://localhost`
 
 ---
+
+## Domyślne konta testowe
+
+Konta tworzone są automatycznie przy pierwszym uruchomieniu (`DataInitializer`),
+jeśli baza danych jest pusta.
+
+| Email | Hasło | Rola |
+|-------|-------|------|
+| admin@medapp.pl | Admin123! | ADMIN |
+| pacjent@medapp.pl | Pacjent123! | PATIENT |
+
+---
+
