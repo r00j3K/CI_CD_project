@@ -1,4 +1,4 @@
-package com.medicalapp.gateway.config;
+package config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
