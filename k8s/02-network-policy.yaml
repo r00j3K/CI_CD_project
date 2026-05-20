@@ -7,7 +7,7 @@ spec:
   podSelector:
     matchLabels:
       app: mysql-db
-  policyTypes:
+  policyTypes:  
     - Ingress
   ingress:
     - from:
