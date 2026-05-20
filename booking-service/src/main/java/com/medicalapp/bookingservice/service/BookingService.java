@@ -61,11 +61,11 @@ public class BookingService {
 
         Booking saved = bookingRepository.save(booking);
 
-        notificationService.sendBookingConfirmation(
-                patientEmail,
-                saved.getId(),
-                saved.getAppointmentTime()
-        );
+        // notificationService.sendBookingConfirmation(
+        //         patientEmail,
+        //         saved.getId(),
+        //         saved.getAppointmentTime()
+        // );
 
         return mapToResponse(saved);
     }
@@ -99,11 +99,11 @@ public class BookingService {
 
         appointmentClient.markSlotAvailable(booking.getSlotId(), token);
 
-        notificationService.sendCancellationConfirmation(
-                patientEmail,
-                booking.getId(),
-                booking.getAppointmentTime()
-        );
+        // notificationService.sendCancellationConfirmation(
+        //         patientEmail,
+        //         booking.getId(),
+        //         booking.getAppointmentTime()
+        // );
 
         return mapToResponse(booking);
     }
