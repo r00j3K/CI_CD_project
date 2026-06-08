@@ -55,6 +55,7 @@ export default function PatientPage() {
             if (err.response?.data?.message?.includes('Maximum')) {
                 showMessage('Osiągnięto limit 3 aktywnych rezerwacji!', 'error');
             } else {
+                console.log(JSON.stringify(err));
                 showMessage('Błąd podczas rezerwacji — ' + err.response?.status, 'error');
             }
         }

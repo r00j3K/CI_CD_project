@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: themarcos/medapp-api-gateway:1.0.0
+          image: r0jek/api-gateway:1.0.0
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:

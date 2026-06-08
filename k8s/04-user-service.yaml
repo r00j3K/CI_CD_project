@@ -27,7 +27,7 @@ spec:
                 topologyKey: "kubernetes.io/hostname"
       containers:
         - name: user-service
-          image: themarcos/medapp-user-service:1.0.0
+          image: r0jek/user-service:1.0.0
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
